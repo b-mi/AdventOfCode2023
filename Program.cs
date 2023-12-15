@@ -12,7 +12,8 @@ namespace AdventOfCode2023
         {
             try
             {
-                new Day9();
+                new Day10();
+                //new Day9();
                 //new Day8();
                 //new Day7();
                 //new Day6();
