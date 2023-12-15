@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Numerics;
+using System.Security.AccessControl;
+using System.Text;
+using System.Xml.XPath;
 
 namespace AdventOfCode2023
 {
@@ -47,6 +51,11 @@ XXX = (XXX, XXX)";
 
         private void part2(string[] lines)
         {
+            // 23977527174353 = LCM(18727, 24253, 18113, 22411, 21797, 16271)
+
+
+
+
             var instructions = lines[0];
             var sep = new char[] { '=', ',' };
             var dct = new Dictionary<string, Tuple<string, string>>();
@@ -66,25 +75,20 @@ XXX = (XXX, XXX)";
                 Console.WriteLine(item);
             }
 
-            var placesZ = dct.Where(kv => kv.Key[2] == 'Z').Select(kv => kv.Key).ToArray();
-            Console.WriteLine("Z");
 
-            foreach (var item in placesZ)
+            var patterns = new Dictionary<int, List<ulong>>();
+            for (int i = 0; i < places.Length; i++)
             {
-                Console.WriteLine(item);
+                patterns.Add(i, new List<ulong>());
             }
-            Console.WriteLine("-");
 
 
             int instrIdx = 0;
             ulong cnt = 0;
-            int okCount = 0;
-            int maxOk = 0;
-            while (okCount != places.Length - 1)
+            while (true)
             {
                 var instr = instructions[instrIdx];
 
-                okCount = 0;
                 cnt++;
                 for (int i = 0; i < places.Length; i++)
                 {
@@ -94,27 +98,31 @@ XXX = (XXX, XXX)";
                     else
                         places[i] = next.Item2;
 
-
-                    //Console.WriteLine($"{cnt}: {instr}, {places[i]}");
-
                     if (places[i][2] == 'Z')
-                        okCount++;
-                }
-
-                if (okCount > maxOk)
-                {
-                    maxOk = okCount;
-                    Console.WriteLine($"Max: {maxOk}");
+                    {
+                        patterns[i].Add(cnt);
+                    }
                 }
 
                 instrIdx++;
                 if (instrIdx == instructions.Length)
                     instrIdx = 0;
 
-                if (cnt % 100_000_000 == 0)
-                    Console.WriteLine(cnt);
+                if (cnt % 100_000 == 0)
+                {
+                    Console.WriteLine($"{cnt}");
+                    break;
+                }
             }
 
+            // analyze
+            var sb = new StringBuilder();
+            var pat = patterns[0];
+            for (int i = 0; i < pat.Count - 1; i++)
+            {
+                sb.AppendLine($"{pat[i]}; {pat[i+1] - pat[i]}");
+            }
+            var str = sb.ToString();
             Console.WriteLine($"Result: {cnt}");
 
         }
