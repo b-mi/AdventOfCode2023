@@ -51,7 +51,7 @@ XXX = (XXX, XXX)";
 
         private void part2(string[] lines)
         {
-            // 23977527174353 = LCM(18727, 24253, 18113, 22411, 21797, 16271)
+            
 
 
 
@@ -75,17 +75,12 @@ XXX = (XXX, XXX)";
                 Console.WriteLine(item);
             }
 
-
-            var patterns = new Dictionary<int, List<ulong>>();
-            for (int i = 0; i < places.Length; i++)
-            {
-                patterns.Add(i, new List<ulong>());
-            }
-
+            var nums = new int[places.Length];
+            int numsCnt = 0;
 
             int instrIdx = 0;
-            ulong cnt = 0;
-            while (true)
+            int cnt = 0;
+            while (numsCnt != places.Length)
             {
                 var instr = instructions[instrIdx];
 
@@ -100,7 +95,11 @@ XXX = (XXX, XXX)";
 
                     if (places[i][2] == 'Z')
                     {
-                        patterns[i].Add(cnt);
+                        if (nums[i] == 0)
+                        {
+                            nums[i] = cnt;
+                            numsCnt++;
+                        }
                     }
                 }
 
@@ -108,22 +107,12 @@ XXX = (XXX, XXX)";
                 if (instrIdx == instructions.Length)
                     instrIdx = 0;
 
-                if (cnt % 100_000 == 0)
-                {
-                    Console.WriteLine($"{cnt}");
-                    break;
-                }
             }
 
-            // analyze
-            var sb = new StringBuilder();
-            var pat = patterns[0];
-            for (int i = 0; i < pat.Count - 1; i++)
-            {
-                sb.AppendLine($"{pat[i]}; {pat[i+1] - pat[i]}");
-            }
-            var str = sb.ToString();
-            Console.WriteLine($"Result: {cnt}");
+            // 23977527174353 = LCM(18727, 24253, 18113, 22411, 21797, 16271)
+            long lcm = lcm_of_array_elements(nums);
+
+            Console.WriteLine($"Result: {lcm}");
 
         }
 
@@ -165,5 +154,68 @@ XXX = (XXX, XXX)";
             Console.WriteLine($"Result: {cnt}");
 
         }
+
+        public static long lcm_of_array_elements(int[] element_array)
+        {
+            long lcm_of_array_elements = 1;
+            int divisor = 2;
+
+            while (true)
+            {
+
+                int counter = 0;
+                bool divisible = false;
+                for (int i = 0; i < element_array.Length; i++)
+                {
+
+                    // lcm_of_array_elements (n1, n2, ... 0) = 0.
+                    // For negative number we convert into
+                    // positive and calculate lcm_of_array_elements.
+                    if (element_array[i] == 0)
+                    {
+                        return 0;
+                    }
+                    else if (element_array[i] < 0)
+                    {
+                        element_array[i] = element_array[i] * (-1);
+                    }
+                    if (element_array[i] == 1)
+                    {
+                        counter++;
+                    }
+
+                    // Divide element_array by devisor if complete
+                    // division i.e. without remainder then replace
+                    // number with quotient; used for find next factor
+                    if (element_array[i] % divisor == 0)
+                    {
+                        divisible = true;
+                        element_array[i] = element_array[i] / divisor;
+                    }
+                }
+
+                // If divisor able to completely divide any number
+                // from array multiply with lcm_of_array_elements
+                // and store into lcm_of_array_elements and continue
+                // to same divisor for next factor finding.
+                // else increment divisor
+                if (divisible)
+                {
+                    lcm_of_array_elements = lcm_of_array_elements * divisor;
+                }
+                else
+                {
+                    divisor++;
+                }
+
+                // Check if all element_array is 1 indicate 
+                // we found all factors and terminate while loop.
+                if (counter == element_array.Length)
+                {
+                    return lcm_of_array_elements;
+                }
+            }
+        }
+
     }
 }
