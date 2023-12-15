@@ -14,14 +14,52 @@ namespace AdventOfCode2023
 1 3 6 10 15 21
 10 13 16 21 30 45";
 
-            //input = @"10 13 16 21 30 45";
+            // input = @"10 13 16 21 30 45";
 
 
             input = Helper.GetWebInput(day);
             var lines = Helper.GetLines(input).ToArray();
-            part1(lines);
-            //part2(lines);
+            //part1(lines);
+            part2(lines);
 
+        }
+
+        private void part2(string[] lines)
+        {
+            long total = 0;
+
+            foreach (var line in lines)
+            {
+                var nums = line.Split(' ').Select(i => int.Parse(i));
+                Node prev = null, first = null;
+                foreach (var num in nums)
+                {
+                    new Node(num, ref prev, ref first, null);
+                }
+
+                while (true)
+                {
+                    first = createChilds(first, out var allZero);
+                    if (allZero)
+                    {
+                        break;
+                    }
+                }
+
+                // extrapolate from beginning
+                long sum = 0;
+                var startPoint = first;
+
+                while (startPoint.ParentL != null)
+                {
+                    sum = ((long)startPoint.ParentL.Value - sum);
+                    startPoint = startPoint.ParentL;
+                }
+                total += sum;
+
+            }
+
+            Console.WriteLine($"Vysledok je: {total}");
         }
 
         private void part1(string[] lines)
