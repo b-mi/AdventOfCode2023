@@ -146,9 +146,6 @@ XXX = (XXX, XXX)";
                 instrIdx++;
                 if (instrIdx == instructions.Length)
                     instrIdx = 0;
-
-                if (cnt % 1_000_000 == 0)
-                    Console.WriteLine(cnt);
             }
 
             Console.WriteLine($"Result: {cnt}");
