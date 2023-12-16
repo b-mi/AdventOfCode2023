@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 
@@ -15,6 +18,16 @@ namespace AdventOfCode2023
         private int startX;
         string[] map;
         bool[,] visited;
+        Point[] coords = new Point[2];
+
+
+        (int x, int y, string alowedChars)[] dirVariants = new (int x, int y, string chars)[]
+        {
+            (1, 0, "┘┐─"), // doprava
+            (-1, 0, "─└┌"), // dolava
+            (0, 1, "│┘└"),  // dole
+            (0, -1, "│┐┌"),  // hore
+        };
 
         public Day10()
         {
@@ -39,6 +52,8 @@ LJ.LJ";
             this.width = lines[0].Length;
             this.height = lines.Length;
             this.visited = new bool[this.width, this.height];
+            coords[0] = new Point();
+            coords[1] = new Point();
 
             var lines2 = new List<string>();
             foreach (var line in lines)
@@ -58,7 +73,7 @@ LJ.LJ";
                 }
             }
             this.map = lines2.ToArray();
-
+            visited[startX, startY] = true;
             /*
             0, 2
             0, 3
@@ -80,84 +95,121 @@ LJ.LJ";
 
             int distance = 0;
             int x = startX, y = startY;
+            int newx = 0, newy = 0;
+            //int newx = 0, newy = 3;
+            // find S direction
+            bool found = false;
+            foreach (var dir in dirVariants)
+            {
+                newx = x + dir.x;
+                newy = y + dir.y;
+                if (newx >= 0 && newy >= 0 && newx < width && newy < height && dir.alowedChars.Contains(map[newy][newx]))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                throw new ApplicationException("nenajdena cesta");
+            }
+            visited[newx, newy] = true;
+            distance++;
             while (true)
             {
-                if (getValidDir(x, y, out var nextx, out var nexty))
+                var signal = stepNext(ref newx, ref newy);
+                Console.WriteLine($"{newx}, {newy}");
+                distance++;
+
+                if (map[newy][newx] == 'S')
                 {
-                    distance++;
-                    Console.WriteLine($"{x},{y} -> {nextx},{nexty}");
-                    x = nextx; y = nexty;
-                }
-                else
+                    // stop
                     break;
+                }
             }
 
             //File.WriteAllLines("map-big.txt", lines2, Encoding.UTF8);
         }
 
-        private bool getValidDir(int x, int y, out int nextx, out int nexty)
+        private int stepNext(ref int x, ref int y)
         {
-            if (x == 3 && y == 3)
+            int newx, newy;
+            var actChar = map[y][x];
+            coords[0].X = coords[0].Y = coords[1].X = coords[1].Y = 0;
+            switch (actChar)
             {
-            }
-            if (checkDir('N', x, y, out nextx, out nexty)) return true;
-            if (checkDir('S', x, y, out nextx, out nexty)) return true;
-            if (checkDir('W', x, y, out nextx, out nexty)) return true;
-            if (checkDir('E', x, y, out nextx, out nexty)) return true;
-
-            return false;
-        }
-
-        private bool checkDir(char dir, int x, int y, out int newx, out int newy)
-        {
-            string validPaths = "";
-            bool checkX = false, checkY = false;
-            newx = x;
-            newy = y;
-            /*
-┌ ─ ┐ │ ┘ └             
-             */
-
-
-            switch (dir)
-            {
-                case 'N': // north
-                    newy--;
-                    validPaths = "│┐┌";
-                    checkY = true;
+                case '─': // x:1, x:-1
+                    coords[0].X = 1;
+                    coords[1].X = -1;
                     break;
-                case 'S': // south
-                    newy++;
-                    validPaths = "│┘└";
-                    checkY = true;
+                case '│': // y: 1, y: -1
+                    coords[0].Y = 1;
+                    coords[1].Y = -1;
                     break;
-                case 'W': // west
-                    newx--;
-                    validPaths = "─┌└";
-                    checkX = true;
+                case '┌': // x: 1, y: 1
+                    coords[0].X = 1;
+                    coords[1].Y = 1;
+                    break;
+                case '┐': // x: -1, y: 1
+                    coords[0].X = -1;
+                    coords[1].Y = 1;
+                    break;
+                case '┘': // x: -1, y: -1
+                    coords[0].X = -1;
+                    coords[1].Y = -1;
+                    break;
+                case '└': // x: 1, y: -1
+                    coords[0].X = 1;
+                    coords[1].Y = -1;
+                    break;
 
-                    break;
-                case 'E': // east
-                    newx++;
-                    validPaths = "┘┐─";
-                    checkX = true;
-
-                    break;
                 default:
-                    break;
+                    throw new ApplicationException("bad char");
             }
-
-            if (checkX && (newx < 0 || newx >= width)) return false;
-            if (checkY && (newy < 0 || newy >= height)) return false;
-            if( visited[newx, newy] ) return false;
-
-            if (validPaths.Contains(map[newy][newx]))
+            foreach (var coord in coords)
             {
-                visited[newx, newy] = true;
-                return true;
-            }
-            return false;
+                newx = x + coord.X;
+                newy = y + coord.Y;
+                if (newx < 0 || newy < 0 || newx >= width || newy >= height)
+                    continue;
+                if (map[newy][newx] == 'S')
+                {
+                    x = newx;
+                    y = newy;
+                    return 2;
+                }
+                if (visited[newx, newy])
+                    continue;
 
+                // pozicia je validna, ale je tam validny znak?
+                // validnu znak je taky, ktory sa vie napojit na predosly
+                /*
+            (1, 0, "┘┐─"), // doprava
+            (-1, 0, "─└┌"), // dolava
+            (0, 1, "│┘└"),  // dole
+            (0, -1, "│┐┌"),  // hore                 
+                 */
+                string validChars = "";
+                if (coord.X == 1)
+                    validChars = "┘┐─";
+                else if (coord.X == -1)
+                    validChars = "─└┌";
+                else if (coord.Y == 1)
+                    validChars = "│┘└";
+                else if (coord.Y == -1)
+                    validChars = "│┐┌";
+
+                var newChar = map[newy][newx];
+
+                if (validChars.Contains(newChar))
+                {
+                    x = newx;
+                    y = newy;
+                    visited[x, y] = true;
+                    return 1;
+                }
+            }
+            return 0;
         }
     }
 }
