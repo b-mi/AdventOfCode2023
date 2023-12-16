@@ -21,13 +21,13 @@ namespace AdventOfCode2023
         Point[] coords = new Point[2];
 
 
-        (int x, int y, string alowedChars)[] dirVariants = new (int x, int y, string chars)[]
-        {
-            (1, 0, "┘┐─"), // doprava
-            (-1, 0, "─└┌"), // dolava
-            (0, 1, "│┘└"),  // dole
-            (0, -1, "│┐┌"),  // hore
-        };
+        //(int x, int y, string alowedChars)[] dirVariants = new (int x, int y, string chars)[]
+        //{
+        //    (1, 0, "┘┐─"), // doprava
+        //    (-1, 0, "─└┌"), // dolava
+        //    (0, 1, "│┘└"),  // dole
+        //    (0, -1, "│┐┌"),  // hore
+        //};
 
         public Day10()
         {
@@ -41,7 +41,7 @@ LJ.LJ";
             // input = @"10 13 16 21 30 45";
 
 
-            // input = Helper.GetWebInput(day);
+            input = Helper.GetWebInput(day);
             var lines = Helper.GetLines(input).ToArray();
             part1(lines);
             //part2(lines);
@@ -95,29 +95,22 @@ LJ.LJ";
 
             int distance = 0;
             int x = startX, y = startY;
-            int newx = 0, newy = 0;
-            //int newx = 0, newy = 3;
-            // find S direction
-            bool found = false;
-            foreach (var dir in dirVariants)
+            int newx = startX, newy = startY;
+            visited[startX, startY] = true;
+
+            var sgHor = stepNextChar(ref newx, ref newy, '─', false);
+            if (sgHor != 1)
             {
-                newx = x + dir.x;
-                newy = y + dir.y;
-                if (newx >= 0 && newy >= 0 && newx < width && newy < height && dir.alowedChars.Contains(map[newy][newx]))
-                {
-                    found = true;
-                    break;
-                }
+                newx = startX; newy = startY;
+                var sgVert = stepNextChar(ref newx, ref newy, '│', false);
+                if (sgVert != 1)
+                    throw new ApplicationException("no connection of S");
             }
-            if (!found)
-            {
-                throw new ApplicationException("nenajdena cesta");
-            }
-            visited[newx, newy] = true;
+
             distance++;
             while (true)
             {
-                var signal = stepNext(ref newx, ref newy);
+                var signal = stepNext(ref newx, ref newy, distance > 1);
                 Console.WriteLine($"{newx}, {newy}");
                 distance++;
 
@@ -129,12 +122,19 @@ LJ.LJ";
             }
 
             //File.WriteAllLines("map-big.txt", lines2, Encoding.UTF8);
+
+            Console.WriteLine($"Vysledok: {distance >> 1}");
         }
 
-        private int stepNext(ref int x, ref int y)
+        private int stepNext(ref int x, ref int y, bool canTestS)
+        {
+            var actChar = map[y][x];
+            return stepNextChar(ref x, ref y, actChar, canTestS);
+        }
+
+        private int stepNextChar(ref int x, ref int y, char actChar, bool canTestS)
         {
             int newx, newy;
-            var actChar = map[y][x];
             coords[0].X = coords[0].Y = coords[1].X = coords[1].Y = 0;
             switch (actChar)
             {
@@ -172,7 +172,7 @@ LJ.LJ";
                 newy = y + coord.Y;
                 if (newx < 0 || newy < 0 || newx >= width || newy >= height)
                     continue;
-                if (map[newy][newx] == 'S')
+                if (canTestS && map[newy][newx] == 'S')
                 {
                     x = newx;
                     y = newy;
