@@ -10,23 +10,23 @@ namespace AdventOfCode2023
     {
         static void Main(string[] args)
         {
-            try
-            {
-                new Day10();
-                //new Day9();
-                //new Day8();
-                //new Day7();
-                //new Day6();
-                //new Day5();
-                //new Day4();
-                //new Day3();
-                //new Day2();
-                //new Day1();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            //try
+            //{
+            new Day10();
+            //new Day9();
+            //new Day8();
+            //new Day7();
+            //new Day6();
+            //new Day5();
+            //new Day4();
+            //new Day3();
+            //new Day2();
+            //new Day1();
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine(ex.Message);
+            //}
 
             Console.WriteLine("Done. Press key.");
             Console.ReadKey();
